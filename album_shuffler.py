@@ -65,6 +65,8 @@ def handle_input(albumDict):
                 displayedAlbumNumber -= 1
                 album = albumDict[displayedAlbumNumber]
                 print(f"{displayedAlbumNumber}. {album['artist']} - {album['title']} ({album['year']})")
+        #elif userInput.upper() == "SKIP [int]":
+            #skip [int] entries. If displayedAlbumNumber > len(albumDict), displayedAlbumNumber = len(albumDict)
         else:
             print("Invalid input. Type Menu to see options.")
 
