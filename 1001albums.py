@@ -36,16 +36,35 @@ def user_menu():
     print("Type Q to quit.")
 
 def handle_input(albumDict):
+    displayedAlbumNumber = None
     while True:
         userInput = input("Command? ")
-        if not userInput: # empty input
-            random_album(albumDict)
+        if not userInput: # User hits 'enter'
+            displayedAlbumNumber = random_album(albumDict)
         elif userInput.isdigit():
-            random_album_by_year(albumDict, int(userInput))
+            displayedAlbumNumber = random_album_by_year(albumDict, int(userInput))
         elif userInput.upper() == "Q":
             break
         elif userInput.upper() == "MENU":
             user_menu()
+        elif userInput.upper() == "NEXT":
+            if displayedAlbumNumber is None:
+                print("No album selected.")
+            elif displayedAlbumNumber == len(albumDict):
+                print("You've reached the end!")
+            else:
+                displayedAlbumNumber += 1
+                album = albumDict[displayedAlbumNumber]
+                print(f"{displayedAlbumNumber}. {album['artist']} - {album['title']} ({album['year']})")
+        elif userInput.upper() == "LAST":
+            if displayedAlbumNumber is None:
+                print("No album selected.")
+            elif displayedAlbumNumber == 1:
+                print("You've reached the end!")
+            else:
+                displayedAlbumNumber -= 1
+                album = albumDict[displayedAlbumNumber]
+                print(f"{displayedAlbumNumber}. {album['artist']} - {album['title']} ({album['year']})")
         else:
             print("Invalid input. Type Menu to see options.")
 
@@ -59,18 +78,20 @@ def print_albums(albums, message):
         print(message)
 
 def random_album(albumDict):
-    randomIndex = random.randint(1, len(albumDict))
-    album = albumDict[randomIndex]
-    print(f"{randomIndex}. {album['artist']} - {album['title']} ({album['year']})")
+    albumNumber = random.randint(1, len(albumDict))
+    album = albumDict[albumNumber]
+    print(f"{albumNumber}. {album['artist']} - {album['title']} ({album['year']})")
+    return albumNumber
 
 def random_album_by_year(albumDict, year):
-    year_albums = [album for album in albumDict.values() if album['year'] == year]
-    if not year_albums:
+    chosenYear = [album for album in albumDict.values() if album['year'] == year]
+    if not chosenYear:
         print(f"No albums found for the year {year}.")
         return
-    album = random.choice(year_albums)
-    album_number = list(albumDict.keys())[list(albumDict.values()).index(album)]
-    print(f"{album_number}. {album['artist']} - {album['title']} ({album['year']})")
+    album = random.choice(chosenYear)
+    albumNumber = list(albumDict.keys())[list(albumDict.values()).index(album)]
+    print(f"{albumNumber}. {album['artist']} - {album['title']} ({album['year']})")
+    return albumNumber
 
 if __name__ == "__main__":
     main()
