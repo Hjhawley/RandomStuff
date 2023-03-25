@@ -1,17 +1,21 @@
+import os
 import xml.etree.ElementTree as et
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
+# Prompt user for name of iTunes playlist XML file
+xml_file = input("Name of the iTunes playlist XML file: ")
+
 # Load iTunes playlist XML
-tree = et.parse('iTunesPlaylist.xml')
+tree = et.parse(xml_file)
 root = tree.getroot()
 
 # Authenticate with Spotify API
 scope = 'playlist-modify-public'
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id='d2b73b9ffc8b40c79aef4890db82237a', client_secret='818c0389ed9648f289235ef7e0fcc946', redirect_uri='http://localhost:8888/callback', scope=scope))
 
-# Create a new Spotify playlist
-playlist_name = 'My New Playlist'
+# Create a new Spotify playlist with the same name as the XML file
+playlist_name = os.path.splitext(xml_file)[0]
 user_id = sp.current_user()['id']
 playlist_id = sp.user_playlist_create(user_id, playlist_name)['id']
 
