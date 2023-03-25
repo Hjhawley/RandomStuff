@@ -38,7 +38,7 @@ def user_menu():
 def handle_input(albumDict):
     displayedAlbumNumber = None
     while True:
-        userInput = input("Command? ")
+        userInput = input()
         if not userInput: # User hits 'enter'
             displayedAlbumNumber = random_album(albumDict)
         elif userInput.isdigit():
