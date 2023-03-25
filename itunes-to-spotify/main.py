@@ -23,15 +23,18 @@ playlist_id = sp.user_playlist_create(user_id, playlist_name)['id']
 for track in root.findall("./dict/dict/dict"):
     name = None
     artist = None
+    album = None
     for child in track:
         if child.tag == "key":
             if child.text == "Name":
                 name = next(child.itertext())
             elif child.text == "Artist":
                 artist = next(child.itertext())
+            elif child.text == "Album":
+                album = next(child.itertext())
     if name and artist:
         # Search for track on Spotify
-        results = sp.search(q=f"track:{name} artist:{artist}", type='track')
+        results = sp.search(q=f"track:{name} artist:{artist} album:{album}", type='track')
         if results['tracks']['items']:
             track_uri = results['tracks']['items'][0]['uri']
             sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
