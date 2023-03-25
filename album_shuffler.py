@@ -43,8 +43,6 @@ def handle_input(albumDict):
             displayedAlbumNumber = random_album(albumDict)
         elif userInput.isdigit():
             displayedAlbumNumber = random_album_by_year(albumDict, int(userInput))
-        elif userInput.upper() == "Q":
-            break
         elif userInput.upper() == "MENU":
             user_menu()
         elif userInput.upper() == "NEXT":
@@ -67,6 +65,8 @@ def handle_input(albumDict):
                 print(f"{displayedAlbumNumber}. {album['artist']} - {album['title']} ({album['year']})")
         #elif userInput.upper() == "SKIP [int]":
             #skip [int] entries. If displayedAlbumNumber > len(albumDict), displayedAlbumNumber = len(albumDict)
+        elif userInput.upper() == "Q":
+            break
         else:
             print("Invalid input. Type Menu to see options.")
 
