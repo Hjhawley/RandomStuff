@@ -24,17 +24,27 @@ for track in root.findall("./dict/dict/dict"):
     name = None
     artist = None
     album = None
-    for child in track:
+    children = list(track)
+    for i, child in enumerate(children):
         if child.tag == "key":
-            if child.text == "Name":
-                name = next(child.itertext())
-            elif child.text == "Artist":
-                artist = next(child.itertext())
-            elif child.text == "Album":
-                album = next(child.itertext())
+            if child.text == "Name" and i + 1 < len(children) and children[i + 1].tag == "string":
+                name = children[i + 1].text
+            elif child.text == "Artist" and i + 1 < len(children) and children[i + 1].tag == "string":
+                artist = children[i + 1].text
+            elif child.text == "Album" and i + 1 < len(children) and children[i + 1].tag == "string":
+                album = children[i + 1].text
     if name and artist:
         # Search for track on Spotify
         results = sp.search(q=f"track:{name} artist:{artist} album:{album}", type='track')
         if results['tracks']['items']:
             track_uri = results['tracks']['items'][0]['uri']
             sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
+            print("Added", artist, "-", name, "to", xml_file)
+        else: # Grab an alternate version of the track if necessary
+            results = sp.search(q=f"track:{name} artist:{artist}", type='track')
+            if results['tracks']['items']:
+                track_uri = results['tracks']['items'][0]['uri']
+                sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
+                print("Added", artist, "-", name, "to", xml_file)
+            else:
+                print("***", artist, "-", name, "could not be found. ***")
