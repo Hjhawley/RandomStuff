@@ -49,31 +49,41 @@ def main():
     user_id = sp.current_user()['id']
     playlist_id = sp.user_playlist_create(user_id, playlist_name)['id']
 
+    added_track_uris = set()
     for track in root.findall("./dict/dict/dict"):
         name, artist, album = process_track(track)
+        
         if name and artist:
             cleaned_name = clean_track_title(name)
             cleaned_album = clean_track_title(album)
             results = sp.search(q=f"track:{cleaned_name} artist:{artist} album:{cleaned_album}", type='track')
             tracks = results['tracks']['items']
+            
             if not tracks:
                 results = sp.search(q=f"track:{cleaned_name} artist:{artist}", type='track')
                 tracks = results['tracks']['items']
-                print(f"Search results for {artist} - {cleaned_name}: {tracks}") ### TODO delete
                 best_track = find_best_track_match(tracks, f"{artist} {cleaned_name}")
                 if best_track:
                     track_uri = best_track['uri']
-                    sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
-                    print("Added", artist, "-", name, "to playlist.")
+                    if track_uri not in added_track_uris:
+                        sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
+                        added_track_uris.add(track_uri)
+                        print("Added", artist, "-", name, "to playlist.")
+                    else:
+                        print("Skipped duplicate track:", artist, "-", name)
                 else:
                     print("***", artist, "-", name, "could not be found. ***")
+            
             if tracks:
-                print(f"Search results for {artist} - {cleaned_name}: {tracks}") ### TODO delete
                 best_track = find_best_track_match(tracks, f"{artist} {cleaned_name}")
                 if best_track:
                     track_uri = best_track['uri']
-                    sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
-                    print("Added", artist, "-", name, "to playlist.")
+                    if track_uri not in added_track_uris:
+                        sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
+                        added_track_uris.add(track_uri)
+                        print("Added", artist, "-", name, "to playlist.")
+                    else:
+                        print("Skipped duplicate track:", artist, "-", name)
                 else:
                     print("***", artist, "-", name, "could not be found. ***")
 
