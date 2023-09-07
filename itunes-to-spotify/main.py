@@ -4,29 +4,26 @@ from fuzzywuzzy import fuzz
 import xml.etree.ElementTree as et
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def clean_track_title(title):
-    cleaned_title = re.sub(r'[\/\-]', ' ', title)  # Replace \-/ with spaces
-    cleaned_title = re.sub(r"[\'’]", '', cleaned_title)  # Delete both kinds of apostrophes
-    cleaned_title = re.sub(r'\(.*\)', '', cleaned_title).strip()
-    return cleaned_title
+    return re.sub(r'\(.*\)', '', re.sub(r"[\'’]", '', re.sub(r'[\/\-]', ' ', title))).strip()
 
 def clean_artist(artist_name):
-    cleaned_name = re.sub(r'[\&]', 'and', artist_name)  # Replace & with and
-    cleaned_name = re.sub(r'^The\s', '', cleaned_name)  # If name begins with 'The ', delete it
-    return cleaned_name
+    return re.sub(r'^The\s', '', re.sub(r'[\&]', 'and', artist_name))
 
 def find_best_track_match(tracks, query):
-    best_match = None
-    best_match_score = 0
+    best_match, best_score = None, 0
     for track in tracks:
         track_name = track['name']
         artist_name = track['artists'][0]['name']
         popularity = track['popularity']
         match_score = fuzz.partial_ratio(query.lower(), f"{artist_name} {track_name}".lower())
-        if match_score > best_match_score or (match_score == best_match_score and popularity > best_match['popularity']):
+        if match_score > best_score or (match_score == best_score and popularity > best_match['popularity']):
             best_match = track
-            best_match_score = match_score
+            best_score = match_score
     return best_match
 
 def process_track(track):
@@ -45,8 +42,7 @@ def process_track(track):
     return track_id, name, artist, album
 
 def track_getter(sp, user_id, playlist_id, playlist_order, tracks_info):
-    added_track_uris = set()
-
+    added_uris = set()
     for track_id in playlist_order:
         name, artist, album = tracks_info[track_id]
         if name and artist:
@@ -63,14 +59,14 @@ def track_getter(sp, user_id, playlist_id, playlist_order, tracks_info):
             best_track = find_best_track_match(tracks, f"{artist} {cleaned_name}")
             if best_track:
                 track_uri = best_track['uri']
-                if track_uri not in added_track_uris:
+                if track_uri not in added_uris:
                     sp.user_playlist_add_tracks(user_id, playlist_id, [track_uri])
-                    added_track_uris.add(track_uri)
+                    added_uris.add(track_uri)
                     print("Added", artist, "-", name, "to playlist.")
                 else:
-                    print("Skipped duplicate track:", artist, "-", name)
+                    print(f"Skipped duplicate track: {artist} - {name}")
             else:
-                print("***", artist, "-", name, "could not be found. ***")
+                print(f"*** {artist} - {name} could not be found. ***")
 
 def process_playlist(playlist):
     track_ids = []
