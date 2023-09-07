@@ -10,10 +10,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def clean_track_title(title: str) -> str:
-    return re.sub(r'\(.*\)', '', re.sub(r"[\'’]", '', re.sub(r'[\/\-]', ' ', title))).strip()
+    return re.sub(r'\(.*\)|[\'’]|[\/\-]', ' ', title).strip()
 
 def clean_artist(artist_name: str) -> str:
-    return re.sub(r'^The\s', '', re.sub(r'[\&]', 'and', artist_name))
+    return re.sub(r'^The\s|[\&]', 'and', artist_name)
 
 def find_best_track_match(tracks: List[Dict], query: str) -> Dict:
     best_match, best_score = None, 0
@@ -30,16 +30,18 @@ def find_best_track_match(tracks: List[Dict], query: str) -> Dict:
 def process_track(track: et.Element) -> Tuple[int, str, str, str]:
     track_id, name, artist, album = None, None, None, None
     children = list(track)
-    for i, child in enumerate(children):
+    for i in range(len(children) - 1):
+        child = children[i]
+        next_child = children[i + 1]
         if child.tag == "key":
-            if child.text == "Track ID" and i + 1 < len(children) and children[i + 1].tag == "integer":
-                track_id = int(children[i + 1].text)
-            elif child.text == "Name" and i + 1 < len(children) and children[i + 1].tag == "string":
-                name = children[i + 1].text
-            elif child.text == "Artist" and i + 1 < len(children) and children[i + 1].tag == "string":
-                artist = children[i + 1].text
-            elif child.text == "Album" and i + 1 < len(children) and children[i + 1].tag == "string":
-                album = children[i + 1].text
+            if child.text == "Track ID" and next_child.tag == "integer":
+                track_id = int(next_child.text)
+            elif child.text == "Name" and next_child.tag == "string":
+                name = next_child.text
+            elif child.text == "Artist" and next_child.tag == "string":
+                artist = next_child.text
+            elif child.text == "Album" and next_child.tag == "string":
+                album = next_child.text
     return track_id, name, artist, album
 
 def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], tracks_info: Dict[int, Tuple[str, str, str]]):
