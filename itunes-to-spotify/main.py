@@ -1,5 +1,6 @@
 import os
 import re
+from typing import Tuple, List, Dict
 from fuzzywuzzy import fuzz
 import xml.etree.ElementTree as et
 import spotipy
@@ -8,13 +9,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def clean_track_title(title):
+def clean_track_title(title: str) -> str:
     return re.sub(r'\(.*\)', '', re.sub(r"[\'’]", '', re.sub(r'[\/\-]', ' ', title))).strip()
 
-def clean_artist(artist_name):
+def clean_artist(artist_name: str) -> str:
     return re.sub(r'^The\s', '', re.sub(r'[\&]', 'and', artist_name))
 
-def find_best_track_match(tracks, query):
+def find_best_track_match(tracks: List[Dict], query: str) -> Dict:
     best_match, best_score = None, 0
     for track in tracks:
         track_name = track['name']
@@ -26,7 +27,7 @@ def find_best_track_match(tracks, query):
             best_score = match_score
     return best_match
 
-def process_track(track):
+def process_track(track: et.Element) -> Tuple[int, str, str, str]:
     track_id, name, artist, album = None, None, None, None
     children = list(track)
     for i, child in enumerate(children):
@@ -41,7 +42,7 @@ def process_track(track):
                 album = children[i + 1].text
     return track_id, name, artist, album
 
-def track_getter(sp, user_id, playlist_id, playlist_order, tracks_info):
+def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], tracks_info: Dict[int, Tuple[str, str, str]]):
     added_uris = set()
     for track_id in playlist_order:
         name, artist, album = tracks_info[track_id]
@@ -68,7 +69,7 @@ def track_getter(sp, user_id, playlist_id, playlist_order, tracks_info):
             else:
                 print(f"*** {artist} - {name} could not be found. ***")
 
-def process_playlist(playlist):
+def process_playlist(playlist: et.Element) -> List[int]:
     track_ids = []
     children = list(playlist)
     for i, child in enumerate(children):
@@ -89,10 +90,10 @@ def main():
     tree = et.parse(xml_file)
     root = tree.getroot()
 
-    scope = 'playlist-modify-public'
-    client_id = 'd2b73b9ffc8b40c79aef4890db82237a'
-    client_secret = '818c0389ed9648f289235ef7e0fcc946'
-    redirect_uri = 'http://localhost:8888/callback'
+    scope = os.getenv("SPOTIPY_SCOPE")
+    client_id = os.getenv("SPOTIPY_CLIENT_ID")
+    client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
+    redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope))
 
     playlist_name = os.path.splitext(xml_file)[0]
