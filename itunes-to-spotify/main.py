@@ -89,14 +89,26 @@ def process_playlist(playlist: et.Element) -> List[int]:
 
 def main():
     xml_file = input("Name of the iTunes playlist XML file: ")
-    tree = et.parse(xml_file)
-    root = tree.getroot()
+    try:
+        tree = et.parse(xml_file)
+        root = tree.getroot()
+    except et.ParseError:
+        print("Error parsing the XML file. Please ensure the file is a valid XML.")
+        return
+    except FileNotFoundError:
+        print("The specified XML file was not found.")
+        return
 
     scope = os.getenv("SPOTIPY_SCOPE")
     client_id = os.getenv("SPOTIPY_CLIENT_ID")
     client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
     redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope))
+    
+    try:
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope))
+    except Exception as e:
+        print(f"Failed to authenticate with Spotify: {e}")
+        return
 
     playlist_name = os.path.splitext(xml_file)[0]
     user_id = sp.current_user()['id']
