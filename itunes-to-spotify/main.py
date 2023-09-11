@@ -26,21 +26,21 @@ def find_best_track_match(tracks: List[Dict], query: str) -> Dict:
 
     # Initialize variables for the best match and its score
     best_match, best_score = None, 0
-    
+
     # Loop through each track in the provided list
     for track in tracks:
         track_name = track['name']
         artist_name = track['artists'][0]['name']
         popularity = track['popularity']
-        
+
         # Use fuzzy string matching to compare the query with each track's artist and name
         match_score = fuzz.partial_ratio(query.lower(), f"{artist_name} {track_name}".lower())
-        
+
         # Update best match if this track has a higher score or the same score but higher popularity
         if match_score > best_score or (match_score == best_score and popularity > best_match['popularity']):
             best_match = track
             best_score = match_score
-    
+
     # Returns a dictionary containing the best matching track.
     return best_match
 
@@ -92,7 +92,7 @@ def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], 
             # Clean the name and album fields.
             cleaned_name = clean_track_title(name)
             cleaned_album = clean_track_title(album)
-            
+     
             # Perform initial Spotify search using cleaned track name, artist, and album.
             results = sp.search(q=f"track:{cleaned_name} artist:{artist} album:{cleaned_album}", type='track')
             tracks = results['tracks']['items']
@@ -121,7 +121,7 @@ def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], 
 
             # Find the best matching track from the search results.
             best_track = find_best_track_match(tracks, f"{artist} {cleaned_name}")
-            
+
             # Add the track to the playlist if it's not a duplicate.
             if best_track:
                 track_uri = best_track['uri']
@@ -138,44 +138,44 @@ def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], 
 def process_playlist(playlist: et.Element) -> List[int]:
     # Initialize an empty list to hold track IDs.
     track_ids = []
-    
+
     # Convert the XML playlist element's children to a list for easy traversal.
     children = list(playlist)
-    
+
     # Loop through the children of the playlist element.
     for i, child in enumerate(children):
-        
+
         # Look for the 'key' element with the text "Playlist Items".
         if child.tag == "key" and child.text == "Playlist Items":
-            
+
             # Make sure the next element exists and is an 'array' element.
             if i + 1 < len(children) and children[i + 1].tag == "array":
-                
+
                 # Get the array element that contains the playlist items.
                 array = children[i + 1]
-                
+
                 # Loop through all the 'dict' elements in the array.
                 for item in array.findall("./dict"):
-                    
+
                     # Initialize a variable to hold the track ID.
                     track_id = None
-                    
+
                     # Loop through the keys within each 'dict' element.
                     for j, key in enumerate(item):
-                        
+
                         # Look for the 'key' element with the text "Track ID".
                         if key.tag == "key" and key.text == "Track ID":
-                            
+
                             # Make sure the next element exists and is an 'integer' element.
                             if j + 1 < len(item) and item[j + 1].tag == "integer":
-                                
+
                                 # Get the track ID from the next element.
                                 track_id = int(item[j + 1].text)
-                    
+
                     # If a track ID was found, append it to the list.
                     if track_id is not None:
                         track_ids.append(track_id)
-                        
+
     # Return the list of track IDs.
     return track_ids
 
@@ -197,7 +197,7 @@ def main():
     client_id = os.getenv("SPOTIPY_CLIENT_ID")
     client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
     redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
-    
+
     # Attempt to authenticate with Spotify API using provided credentials.
     try:
         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope))
