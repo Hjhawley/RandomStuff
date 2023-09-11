@@ -227,3 +227,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# TODO: Error log that tracks duplicates and songs that can't be found
