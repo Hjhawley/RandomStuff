@@ -2,7 +2,9 @@ import os
 import random
 
 def random_game_selector(directory):
-    filetypes = ('.rom', '.iso', '.nes', '.sfc', '.3ds', '.a26', '.chd', '.nds', '.gb', '.gbc', '.gba', '.rvz', '.md', '.sms', '.z64', '.cue', '.pce', '.ws', '.wsc', '.zip') # Adjust extensions as needed
+    # Read the file extensions from the text file
+    with open('filetypes.txt', 'r') as f:
+        filetypes = tuple(line.strip() for line in f if line.strip())
     
     # Get all ROM files in the directory and subdirectories
     rom_files = []
