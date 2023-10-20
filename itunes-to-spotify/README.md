@@ -12,9 +12,9 @@ Spotify playlist.
 
 ## Setup
 
-1. Create a Spotify Developer app to obtain your `client_id`, `client_secret`, and `redirect_uri`. (This is free)
+1. Obtain your `client_id`, `client_secret`, and `redirect_uri`. You can do this by going to https://developer.spotify.com/dashboard and creating an app (this is free).
 
-2. Create an `.env` file in the root of your project directory and populate it with your Spotify credentials like so:
+2. Create an `.env` file in the root of your project directory and add your Spotify credentials like this:
 
     ```
     SPOTIPY_SCOPE='your_scope_here'
@@ -25,6 +25,6 @@ Spotify playlist.
 
 ## Usage
 
-1. Export your iTunes playlist as an XML file. Place it in the same directory as main.py.
+1. Export your iTunes playlist as an XML file and save it in the root directory.
 
 2. Run main.py and enter the name of your file (ex: Playlist.xml)
