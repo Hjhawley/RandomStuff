@@ -45,16 +45,24 @@ def simpson_rule(a, b, n):
     return (h/3) * integral
 
 # Number of subintervals
-n_midpoint = 100000  # Modify as needed
-n_trapezoidal = 100000  # Modify as needed
-n_simpson = 100000  # Must be even, modify as needed
+n = 2
+prev = 0
 
-# Calculations
-midpoint_result = midpoint_rule(a, b, n_midpoint)
-trapezoidal_result = trapezoidal_rule(a, b, n_trapezoidal)
-simpson_result = simpson_rule(a, b, n_simpson)
+for rule in []
+for n in range(10000, 100000, 2):
+    # Calculations
+    #midpoint_result = midpoint_rule(a, b, n)
+    #trapezoidal_result = trapezoidal_rule(a, b, n)
+    simpson_result = simpson_rule(a, b, n)
 
-# Display results
-print(f"Midpoint Rule with {n_midpoint} subintervals: {midpoint_result:.12f}")
-print(f"Trapezoidal Rule with {n_trapezoidal} subintervals: {trapezoidal_result:.12f}")
-print(f"Simpson's Rule with {n_simpson} subintervals: {simpson_result:.12f}")
+    # Display results
+    #print(f"Midpoint Rule with {n} subintervals: {midpoint_result:.13f}")
+    #print(f"Trapezoidal Rule with {n} subintervals: {trapezoidal_result:.13f}")
+    print(f"Simpson's Rule with {n} subintervals: {simpson_result:.13f}")
+
+    difference = (abs(simpson_result-prev))
+    print(f"Difference: {difference:.12f}")
+    if (difference < 0.000000000001):
+        print("n found.")
+        break
+    prev = simpson_result
