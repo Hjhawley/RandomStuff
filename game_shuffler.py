@@ -38,7 +38,15 @@ def get_game_and_system_from_path(path, system_mapping):
     return game_name, full_system_name
 
 def main():
-    directory = "H:/Emulation/Games"
+    # Possible directories
+    possible_directories = ["H:/Emulation/Games", "D:/Emulation/Games"]
+    
+    # Find the first existing directory from the list
+    directory = next((dir for dir in possible_directories if os.path.exists(dir)), None)
+    
+    if not directory:
+        print("No valid game directories found!")
+        return
     
     # Define the system abbreviation to full name mapping
     system_mapping = {
