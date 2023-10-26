@@ -56,12 +56,12 @@ def main():
         "PS2": "PlayStation 2",
         "TG-16": "TurboGrafx-16",
         "TG-CD": "TurboGrafx-CD",
-        # ... Add other mappings as needed ...
     }
 
     roms = get_roms(directory)
     total_games = len(roms)
-    print(f"'{total_games}' total games.")
+    print(f"Searching {directory}.")
+    print(f"{total_games} games found.")
     
     while True:
         chosen_game = random.choice(roms)
@@ -72,10 +72,10 @@ def main():
             game_name, system = get_game_and_system_from_path(chosen_game, system_mapping)
             print(f"You should play '{game_name}' for the {system}")
         
-        response = input("Hit ENTER to roll again, or type 'q' to quit: ")
-        print()
+        response = input("Hit ENTER to roll again, or type 'q' to quit: \n")
         if response.upper() == 'Q':
             print("Goodbye!")
             break
 
-main()
+if __name__ == "__main__":
+    main()
