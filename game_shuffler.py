@@ -1,7 +1,7 @@
 import os
 import random
 
-def random_game_selector(directory):
+def get_roms(directory):
     # Read the file extensions from the text file
     with open('filetypes.txt', 'r') as f:
         filetypes = tuple(line.strip() for line in f if line.strip())
@@ -15,11 +15,7 @@ def random_game_selector(directory):
     
     if not rom_files:
         return None
-
-    # Randomly select a ROM
-    selected_rom = random.choice(rom_files)
-    
-    return selected_rom
+    return rom_files
 
 def get_game_and_system_from_path(path, system_mapping):
     # Extract the game name by splitting the path and taking the last part without the extension
@@ -63,16 +59,20 @@ def main():
         # ... Add other mappings as needed ...
     }
 
+    roms = get_roms(directory)
+    total_games = len(roms)
+    print(f"'{total_games}' total games.")
+    
     while True:
-        selected_game = random_game_selector(directory)
+        chosen_game = random.choice(roms)
 
-        if selected_game is None:
+        if chosen_game is None:
             print("No ROMs found.")
         else:
-            game_name, system = get_game_and_system_from_path(selected_game, system_mapping)
+            game_name, system = get_game_and_system_from_path(chosen_game, system_mapping)
             print(f"You should play '{game_name}' for the {system}")
         
-        response = input("Hit ENTER to roll again or type 'q' to quit: ")
+        response = input("Hit ENTER to roll again, or type 'q' to quit: ")
         print()
         if response.upper() == 'Q':
             print("Goodbye!")
