@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 from typing import Tuple, List, Dict
 from fuzzywuzzy import fuzz
 import xml.etree.ElementTree as et
@@ -9,15 +10,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+
 def clean_track_title(title: str) -> str:
-    # Cleans a song title by removing characters that could interfere with matching.
-    # Significantly improves search accuracy.
+    # Cleans a song title by removing special characters for improved matching.
     return re.sub(r'\(.*\)|[\'’]|[\/\-]', ' ', title).strip()
 
-def clean_artist(artist_name: str) -> str:
-    # Clean an artist's name by removing "the" and replacing "&" with "and".
-    # Again, significantly improves search accuracy.
-    return re.sub(r'^The\s|[\&]', '', artist_name).replace('&', 'and')
+def clean_artist_name(artist_name: str) -> str:
+    # Cleans up artist's name for improved matching.
+    return artist_name.replace('The ', '').replace('&', 'and')
 
 def find_best_track_match(tracks: List[Dict], query: str) -> Dict:
     # Finds the best track match from a list of track dictionaries based on a query string.
@@ -99,7 +100,7 @@ def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], 
 
             # If no matches found, clean artist name and perform the search again.
             if not tracks:
-                cleaned_artist = clean_artist(artist)
+                cleaned_artist = clean_artist_name(artist)
                 results = sp.search(q=f"track:{cleaned_name} artist:{cleaned_artist}", type='track')
                 tracks = results['tracks']['items']
 
@@ -179,6 +180,22 @@ def process_playlist(playlist: et.Element) -> List[int]:
     # Return the list of track IDs.
     return track_ids
 
+def authenticate_spotify() -> spotipy.Spotify:
+    # Retrieve Spotify API credentials from .env.
+    scope = os.getenv("SPOTIPY_SCOPE")
+    client_id = os.getenv("SPOTIPY_CLIENT_ID")
+    client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
+    redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
+
+    if not all([scope, client_id, client_secret, redirect_uri]):
+        raise ValueError("Spotify API credentials are missing in .env file.")
+
+    return spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope))
+
+def create_spotify_playlist(sp: spotipy.Spotify, user_id: str, playlist_name: str) -> str:
+    """ Creates a Spotify playlist and returns its ID. """
+    return sp.user_playlist_create(user_id, playlist_name)['id']
+
 def main():
     # Prompt the user for an iTunes XML playlist file name and attempt to parse it.
     xml_file = input("Name of the iTunes playlist XML file: ")
@@ -192,23 +209,17 @@ def main():
         print("The specified XML file was not found.")
         return
 
-    # Retrieve Spotify API credentials from .env.
-    scope = os.getenv("SPOTIPY_SCOPE")
-    client_id = os.getenv("SPOTIPY_CLIENT_ID")
-    client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
-    redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
-
     # Attempt to authenticate with Spotify API using provided credentials.
     try:
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope))
+        sp = authenticate_spotify()
     except Exception as e:
-        print(f"Failed to authenticate with Spotify: {e}")
+        logging.error(f"Failed to authenticate with Spotify: {e}")
         return
 
     # Create a Spotify playlist using the name of the iTunes playlist.
-    playlist_name = os.path.splitext(xml_file)[0]
     user_id = sp.current_user()['id']
-    playlist_id = sp.user_playlist_create(user_id, playlist_name)['id']
+    playlist_name = os.path.splitext(xml_file)[0]
+    playlist_id = create_spotify_playlist(sp, user_id, playlist_name)
 
     # Process the iTunes playlist to obtain the track IDs.
     playlist_order = []
