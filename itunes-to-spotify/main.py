@@ -1,24 +1,17 @@
 import os
-import re
 import logging
 from typing import Tuple, List, Dict
 from fuzzywuzzy import fuzz
 import xml.etree.ElementTree as et
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+
 from dotenv import load_dotenv
+from utils import clean_artist, clean_track
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
-
-def clean_track_title(title: str) -> str:
-    # Cleans a song title by removing special characters for improved matching.
-    return re.sub(r'\(.*\)|[\'’]|[\/\-]', ' ', title).strip()
-
-def clean_artist_name(artist_name: str) -> str:
-    # Cleans up artist's name for improved matching.
-    return artist_name.replace('The ', '').replace('&', 'and')
 
 def find_best_track_match(tracks: List[Dict], query: str) -> Dict:
     # Finds the best track match from a list of track dictionaries based on a query string.
@@ -91,8 +84,8 @@ def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], 
         # Proceed as long as name and artist fields are not None.
         if name and artist:
             # Clean the name and album fields.
-            cleaned_name = clean_track_title(name)
-            cleaned_album = clean_track_title(album)
+            cleaned_name = clean_track(name)
+            cleaned_album = clean_track(album)
      
             # Perform initial Spotify search using cleaned track name, artist, and album.
             results = sp.search(q=f"track:{cleaned_name} artist:{artist} album:{cleaned_album}", type='track')
@@ -100,7 +93,7 @@ def track_getter(sp, user_id: str, playlist_id: str, playlist_order: List[int], 
 
             # If no matches found, clean artist name and perform the search again.
             if not tracks:
-                cleaned_artist = clean_artist_name(artist)
+                cleaned_artist = clean_artist(artist)
                 results = sp.search(q=f"track:{cleaned_name} artist:{cleaned_artist}", type='track')
                 tracks = results['tracks']['items']
 
